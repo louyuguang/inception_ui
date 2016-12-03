@@ -1,0 +1,127 @@
+{% extends "html/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load url from future %}
+
+{% block selfcss %}
+{% endblock %}
+{% block content-main %}
+<!-- Main content -->
+<section class="content">
+        <div id="page-wrapper">
+            <div class="col-lg-12">
+                <h1 class="page-header">历史记录</h1>
+            </div>
+        <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <!--<button type="submit" id="detail" class="btn btn-primary" name="check_sql">查看详情</button>-->
+                                    <table id="history_detail" class="table table-striped table-bordered table-hover dataTable no-footer" data-show-columns="true">
+                                    
+                                        <thead>
+                                            <tr>
+                                                <th style="" data-field="0" tabindex="0">id</th>
+                                                <th>{{id}}</th>
+                                            </tr>
+
+                                            <tr>
+                                                <th>执行时间</th>
+                                                <th>{{time}}</th>
+                                            </tr>
+                                            <tr>
+                                                <th>SQL语句</th>
+                                                <th>{{sqlstat}}</th>
+                                            </tr>
+                                            <tr>
+                                                <th>错误信息</th>
+                                                <th>{{result}}</th>
+                                            </tr>
+                                            <tr>
+                                                <th>数据库</th>
+                                                <th>{{dbname}}</th>
+                                            </tr>
+                                            <tr>
+                                                <th>SQL影响行数</th>
+                                                <th>{{rows}}</th>
+                                            </tr>
+                                            <tr>
+                                                <th>备份库</th>
+                                                <th>{{backup}}</th>
+                                            </tr>
+                                            <tr>
+                                                <th>回滚标识</th>
+                                                <th>{{sequence}}</th>
+                                            </tr>
+                                            <tr>
+                                                <th>回滚状态</th>
+                                                <th>{{rollback_status}}</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                    {% ifequal rollback_stat 0 %}{% ifnotequal sequence None %}<button type="button" class="btn btn-primary" data-toggle="modal"  id="rollback" data-target="#roll-back"><span> 回滚</span></button>{% endifnotequal %}{% endifequal %}
+                                </div>
+                                <div class="modal fade" id="roll-back" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-md">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                                                <h4 class="modal-title">SQL回滚</h4>
+                                            </div>
+                                            <form role="form" action="{% url 'Inception:roll_back' %}" method="post">
+                                            <div class="modal-body">
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control" readonly="readonly" style="width:60px;" id="rollback_id" name="rollback_id"></input>
+                                                </div>
+                                                <div class="form-group">
+                                                <textarea class="form-control" rows="15" name="sql" id="sql" readonly="readonly"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                                                <button type="submit" class="btn btn-success" id="rollback_submit">确认</button>
+                                            </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /.col-lg-12 (nested) -->
+
+                            </div>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+        </div>
+        <!-- /#page-wrapper -->
+</section>
+{% endblock %}
+
+{% block selfjs %}
+        
+        <script>
+        $(function () { 
+            $('#roll-back').on('show.bs.modal', function(event){
+                var id = GetQueryString('id');
+                $.post({% url 'Inception:get_rollback' %},{id:id}, function(data){
+                    $('#sql').val(data);
+                    $('#rollback_id').val(id)
+                });
+            });
+        
+        
+            function GetQueryString(name)
+            {
+                var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if(r!=null)return  unescape(r[2]); return null;
+            }
+        });
+        </script>
+{% endblock %}

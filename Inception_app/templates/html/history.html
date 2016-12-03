@@ -1,0 +1,79 @@
+{% extends "html/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load url from future %}
+
+{% block selfcss %}
+
+        <link href="{% static "dist/css/bootstrap-table.css" %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+{% block content-main %}
+<!-- Main content -->
+<section class="content">
+        <div id="page-wrapper">
+            <div class="col-lg-12">
+                <h1 class="page-header">历史记录</h1>
+            </div>
+        <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div id="toolbar" class="columns columns-left btn-group pull-left">
+                                        <button type="button" class="btn btn-default" data-toggle="modal"  id="getselect-data"><span> 查看详情</span></button>
+                                    </div>
+                                    <!--<button type="submit" id="detail" class="btn btn-primary" name="check_sql">查看详情</button>-->
+                                    <table id="history" data-toggle="table" data-locale="zh-CN" data-url="{% url 'Inception:gethistory' %}" data-row-style="rowStyle" minimumCountColumns="50"  data-click-to-select="true"  data-search="true" data-show-refresh="true"   data-pagination="true" data-page-size="50" data-page-list="[100, 200, 500, 1000]">
+                                        <thead>
+                                            <tr>
+                                                <th data-field="state" data-radio="true"></th>
+                                                <th data-field="id" data-sortable="false" data-title="id" data-searchable="false" >id</th>
+                                                <th data-field="time" data-sortable="false">执行时间</th>
+                                                <th data-field="title" data-sortable="false">sql</th>
+                                                <th data-field="dbname" data-sortable="false">执行库</th>
+                                                <th data-field="backup" data-sortable="false">备份库</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                    
+                                </div>
+                                <!-- /.col-lg-12 (nested) -->
+
+                            </div>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+        </div>
+        <!-- /#page-wrapper -->
+</section>
+{% endblock %}
+
+{% block selfjs %}
+
+    <!-- datatable -->
+    <script src="{% static "dist/js/bootstrap-table.js" %}" type="text/javascript"></script>
+        <script>
+            $(function () { 
+                    $('#getselect-data').on('click', function () {
+                        var table = $('#history')
+                        var selects = table.bootstrapTable('getSelections'),
+                        id = $.map(selects, function (row) {
+                            return row.id;
+                        });
+                        
+                        if (id == ''){
+                            alert('请选择一条记录');
+                        }
+                        else {
+                            location.href = "/historydetail/?id="+id;
+                        }
+                    });
+            });
+        </script>
+{% endblock %}

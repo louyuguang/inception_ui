@@ -1,0 +1,109 @@
+{% extends "html/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load url from future %}
+
+
+{% block content-main %}
+<!-- Main content -->
+<section class="content">
+        <div id="page-wrapper">
+            <div class="col-lg-12">
+                <h1 class="page-header">SQL审核</h1>
+            </div>
+        <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            审核语句
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <form role="form" action="{% url 'Inception:check_sql' %}" method="post">
+                                        <br>
+                                        服务器：
+                                        <select class="form-control" style="width:200px;" id="server" name='server'>
+                                                {% if server_info %}<option value="{{server_info}}"selected>{{server_info}}</option>{% endif %}
+                                        </select>
+                                        <br>
+                                        库：
+                                        <select class="form-control" style="width:200px;" id="dbname" name='dbname'>
+                                                <option value="-1">请选择数据库</option>
+                                                {% if db_info %}<option value="{{db_info}}" selected >{{db_info}}</option>{% endif %}
+                                        </select>
+                                        <br>
+                                        <div class="form-group">
+                                            <div class="text-left"><textarea class="form-control" rows="15" name="sql" {% if sql and check_result %}readonly="readonly"{% endif %}>{% if sql %}{{sql}}{% endif %}</textarea></div>
+                                        </div>
+                                        
+                                        {% if not sql or not check_result %}<button type="submit" class="btn btn-primary" name="check_sql">审核</button>{% endif %}
+                                        {% if sql and check_result %}{% ifnotequal error 'serious' %}<button type="submit" class="btn btn-success" name="exec_sql">执行</button>  {% endifnotequal %}{% endif %}<button type="button" class="btn btn-warning" onclick="location='/'">取消</button>
+                                    </form>
+
+                                </div>
+                                <!-- /.col-lg-6 (nested) -->
+
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <h4>{% if error %}Error Level:  {{error}}  {% endif %}</h4>
+                                    <h5>{% if check_result %}<h4>Check Detail:</br></h4>
+                                        <table class="table table-striped table-bordered table-hover" id="table-holiday"   minimumCountColumns="50"  data-click-to-select="true" data-show-columns="true" data-search="false" data-show-toggle="false"  data-pagination="true" data-page-size="50" data-page-list="[100, 200, 500, 1000]">
+                                        <thead>
+                                        <tr>
+                                            <th data-field="sqlstat" data-sortable="false">sqlstat</th>
+                                            <th data-field="errlevel" data-sortable="false">errlevel</th>
+                                            <th data-field="errormessage" data-sortable="false">errormessage</th>
+                                        </tr>
+                                        {% for line in check_result %}
+                                        <tr>
+                                            <th>
+                                                {% for sqlstat in line.sqlstat %}{{sqlstat}}<br>{% endfor %}
+                                            </th>
+                                            <th>{{line.errlevel}}</th>
+                                            <th>{% for errormessage in line.errormessage %}{{errormessage}}<br>{% endfor %}</th>
+                                        </tr>
+                                        {% endfor %}
+                                        </thead>
+                                        </table>
+                                    {% endif %}</h5>
+                                </div>
+                            </div>
+                            <!-- /.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+        </div>
+        <!-- /#page-wrapper -->
+</section>
+{% endblock %}
+
+{% block selfjs %}
+<script>
+    <!--$(document).ready(function(){-->
+        if($("#server").find("option").length == 0){
+            $("#server").append("<option value=-1>请选择服务器</option>")
+            $.get("{% url 'Inception:getserver' %}", function(server_list){
+                for (var i=0;i<server_list.length;i++){
+                    $("#server").append("<option value='"+server_list[i].ip_port+"'>"+server_list[i].ip_port+"</option>");            
+                }
+            });
+        }
+        
+        $("#server").change(function(){
+            $("#dbname").empty();
+            var serverinfo_ip_port = $("#server").val();
+            $.get("{% url 'Inception:getdbname' %}", {serverinfo_ip_port: serverinfo_ip_port}, function(dbname_list){
+                for(var i=0;i<dbname_list.length;i++){
+                    $("#dbname").append("<option value='"+dbname_list[i].dbname+"'>"+dbname_list[i].dbname+"</option>");
+                }
+            });
+        });
+    <!--});-->
+</script>
+{% endblock %}

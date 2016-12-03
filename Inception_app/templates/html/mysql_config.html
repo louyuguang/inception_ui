@@ -1,0 +1,261 @@
+{% extends "html/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load url from future %}
+
+{% block selfcss %}
+
+        <link href="{% static "dist/css/bootstrap-table.css" %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+{% block content-main %}
+<!-- Main content -->
+<section class="content">
+        <div id="page-wrapper">
+            <div class="col-lg-12">
+                <h1 class="page-header">MYSQL配置</h1>
+            </div>
+        <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div id="status" role="alert">
+                                    </div>
+                                    <div id="toolbar" class="columns columns-left btn-group pull-left">
+                                        <button type="button" class="btn btn-default" data-toggle="modal"  id="edit-config" data-target="#server-add"><span> 编辑</span></button>
+                                        <button type="button" class="btn btn-default" data-toggle="modal"  id="delete-config" data-target="#server-del"><span> 删除</span></button>
+                                        <button type="button" class="btn btn-default" data-toggle="modal"  id="new-config" data-target="#server-add"><span> 新增</span></button>
+                                    </div>
+                                    
+                                    <div class="modal fade" id="server-add" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-md">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                                                    <h4 class="modal-title">新增MYSQL配置</h4>
+                                                </div>
+                                                <form role="form" action="{% url 'Inception:save_server' %}" method="post" id="add">
+                                                <div class="modal-body">
+                                                    <div class="row-fluid" id="modal-alert-msg" style="padding-left: 0px;">
+                                                        <div class="col-md-12">
+                                                            <div id="modal-status" role="alert">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group" id='dis_id'>
+                                                        <label for="forDate" class="control-label text-left">id:</label>
+                                                        <div class="text-left"><input type="text" class="form-control" name="id" id="id" readonly="readonly"></div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="forDate" class="control-label text-left">名称:</label>
+                                                        <div class="text-left"><input type="text" class="form-control" name="name" id="name"></div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="forDate" class="control-label text-left">服务器ip:</label>
+                                                        <div class="text-left"><input type="text" class="form-control" name="serverip" id="ip"></div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="forDate" class="control-label text-left">服务端口:</label>
+                                                        <div class="text-left"><input type="text" class="form-control" name="serverport" id="port"></div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="forComment" class="control-label text-left">数据库:</label>
+                                                        <div class="text-left"><input type="text" class="form-control" name="dbname" id="dbname"></div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="forComment" class="control-label text-left">用户名:</label>
+                                                        <div class="text-left"><input type="text" class="form-control" name="user" id="user"></div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="forComment" class="control-label text-left">密码:</label>
+                                                        <div class="text-left"><input type="text" class="form-control" name="password" id="password"></div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                                                        <button id="check_server" type="button" class="btn btn-primary" name="check_server">连接测试</button>
+                                                    </div>
+                                                </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal fade" id="server-del" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-md">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                                                    <h4 class="modal-title">删除数据库配置</h4>
+                                                </div>
+                                                <form role="form">
+                                                <div class="modal-body">
+                                                    <p></p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                                                    <button type="button" class="btn btn-primary" id="remove-config">确认</button>
+                                                </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    <table id="config" data-toggle="table" data-locale="zh-CN" data-url="{% url 'Inception:getmysqlconfig' %}" data-row-style="rowStyle" minimumCountColumns="50"  data-click-to-select="true"  data-search="true" data-show-refresh="true"   data-pagination="true" data-page-size="50" data-page-list="[100, 200, 500, 1000]">
+                                    <thead>
+                                    <tr>
+                                        <th data-field="state" data-radio="true"></th>
+                                        <th data-field="id" data-sortable="false">id</th>
+                                        <th data-field="name" data-sortable="false">name</th>
+                                        <th data-field="ip_port" data-sortable="false">ip_port</th>
+                                        <th data-field="dbname" data-sortable="false">dbname</th>
+                                        <th data-field="user" data-sortable="false">user</th>
+                                    </tr>
+                                    </thead>
+                                    </table>
+                                    
+                                </div>
+                                <!-- /.col-lg-12 (nested) -->
+
+                            </div>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+        </div>
+        <!-- /#page-wrapper -->
+</section>
+{% endblock %}
+
+{% block selfjs %}
+
+    <!-- datatable -->
+    <script src="{% static "dist/js/bootstrap-table.js" %}" type="text/javascript"></script>
+        <script>
+            $(function () { 
+                $('#edit-config').click( function () {
+                    var modal = $(this)
+                    var table = $('#config')
+                    var selected = table.bootstrapTable('getSelections')[0]
+                    try {
+                        var id = selected["id"]
+                        var name = selected["name"]
+                        var ip = selected["ip_port"].split(":")[0]
+                        var port = selected["ip_port"].split(":")[1]
+                        var dbname = selected["dbname"]
+                        var user = selected["user"]
+                    }catch(e){}
+                        
+                    if (typeof(id) == "undefined") {
+                            alert("请选择服务器配置");
+                            return false;
+                    }
+                    else {
+                            $('#id').val(id)
+                            $('#ip').val(ip)
+                            $('#name').val(name)
+                            $('#port').val(port)
+                            $('#dbname').val(dbname)
+                            $('#user').val(user)
+                            
+                    }
+                });
+
+                $('#server-del').on('show.bs.modal', function (event) {
+                    var modal = $(this)
+                    var table = $('#config')
+                    var selected = table.bootstrapTable('getSelections')[0]
+                    var id = selected["id"]
+                    var server = selected["ip_port"]
+                    var dbname = selected["dbname"]
+                    if ( id == '' ) {
+                        alert('请选择要删除的数据库配置');
+                    }
+                    else{
+                        modal.find('.modal-body p').text('确认删除配置：' + server + '/' + dbname);
+                        $('#remove-config').unbind().click(function(event) {
+                            $.post({% url 'Inception:delete_server' %},{id: id})
+                                .done(function(){
+                                    alert('删除成功')
+                                    table.bootstrapTable('refresh');
+                                    modal.modal('hide');
+                                })
+                                .fail(function(){
+                                    table.bootstrapTable('refresh');
+                                    modal.modal('hide');
+                                });
+                        });
+                    };
+                });
+                
+                $('#server-add').on('hide.bs.modal', function (event) {
+                    $('#server-add').find('form input[type="text"]').val('');
+                    $('#modal-status').attr('class','').empty();
+                    $('#test').attr('class', 'btn btn-primary').attr('id','check_server').attr('type','button').html('连接测试');
+                });
+                $('#check_server').unbind().click(function(event) {
+                    var ip = $('#ip').val(),
+                        port = $('#port').val(),
+                        dbname = $('#dbname').val(),
+                        user = $('#user').val(),
+                        password = $('#password').val();
+                    var check_server = $('#add').serialize();
+                    if ( ip == '' ) {
+                        $('#modal-status').attr('class', 'alert alert-danger alert-dismissible').html(
+                            '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>请填写ip地址！'
+                        );
+                    }
+                    else if ( port == '' ) {
+                        $('#modal-status').attr('class', 'alert alert-danger alert-dismissible').html(
+                            '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>请填写端口号！'
+                        );
+                    
+                    }
+                    else if ( dbname == '' ) {
+                        $('#modal-status').attr('class', 'alert alert-danger alert-dismissible').html(
+                            '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>请填写数据库名称！'
+                        );
+                    
+                    }
+                    else if ( user == '' ) {
+                        $('#modal-status').attr('class', 'alert alert-danger alert-dismissible').html(
+                            '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>请填写用户名！'
+                        );
+                    
+                    }
+                    else if ( password == '' ) {
+                        $('#modal-status').attr('class', 'alert alert-danger alert-dismissible').html(
+                            '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>请填写密码！'
+                        );
+                    }
+                    else {
+                        $.post({% url 'Inception:check_server' %}, check_server, function(data){
+                            if ( data === 'True'){
+                                $('#modal-status').attr('class', 'alert alert-success alert-dismissible').html(
+                                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>连接成功！'
+                                );
+                                $('#check_server').attr('class', 'btn btn-success').attr('id','test').attr('type','submit').attr('name','save_server').html('保存');
+                            }
+                            else{
+                                $('#modal-status').attr('class', 'alert alert-danger alert-dismissible').html(
+                                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>连接失败！'
+                                );
+                            }
+                        }).fail(function() {
+                                $('#modal-status').attr('class', 'alert alert-danger alert-dismissible').html(
+                                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>连接失败！'
+                                );
+                            });
+                        //$('#server-add').modal('hide');
+                        // clear form data
+                        //$('#server-add').find('form input[type="text"]').val('');
+                    };
+                });
+
+            });
+        </script>
+{% endblock %}
